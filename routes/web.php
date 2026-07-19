@@ -36,3 +36,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/pledges/{pledge}', 'App\Http\Controllers\Web\PledgeController@show')->name('pledges.show');
     Route::delete('/pledges/{pledge}', 'App\Http\Controllers\Web\PledgeController@destroy')->name('pledges.destroy');
 });
+
+// Fallback image routing for environments without public storage symlinks (like Hostinger Shared Hosting)
+Route::get('/storage/pledges/signatures/{filename}', function ($filename) {
+    $path = 'pledges/signatures/' . $filename;
+    if (!Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+    $file = Illuminate\Support\Facades\Storage::disk('public')->get($path);
+    return response($file, 200)->header('Content-Type', 'image/png');
+});
